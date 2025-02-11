@@ -1,4 +1,4 @@
-name: PR Activity Notificatier
+name: PR Activity Notifier
 
 on:
   pull_request:
@@ -35,6 +35,7 @@ jobs:
                 echo "icon=🔄" >> $GITHUB_OUTPUT
                 echo "action_text=PR Reopened" >> $GITHUB_OUTPUT
                 ;;
+              "edited")
                 echo "icon=📝" >> $GITHUB_OUTPUT
                 echo "action_text=PR Updated" >> $GITHUB_OUTPUT
                 ;;
@@ -108,7 +109,7 @@ jobs:
                   "collapsible": false,
                   "widgets": [{
                     "decoratedText": {
-                      "topLabel": "Author"
+                      "topLabel": "Author",
                       "text": "@${USER}",
                       "startIcon": {
                         "knownIcon": "PERSON"
@@ -117,7 +118,7 @@ jobs:
                   },
                   {
                     "decoratedText": {
-                      "topLabel": "Reviewer"
+                      "topLabel": "Reviewer",
                       "text": "@${EXTRA_INFO}",
                       "startIcon": {
                         "knownIcon": "MULTIPLE_PEOPLE"
