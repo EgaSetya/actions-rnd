@@ -67,4 +67,4 @@ jobs:
               }
             }]
           }' \
-          "${{ secrets.GOOGLE_CHAT_WEBHOOK }}"
+          "${{ vars.GOOGLE_CHAT_WEBHOOK }}"
