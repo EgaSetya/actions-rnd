@@ -1,4 +1,4 @@
-name: Google Chat Notification
+name: PR Comment Notification
 
 on:
   issue_comment:
