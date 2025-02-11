@@ -1,4 +1,4 @@
-name: PR Comment Google Chat Notifier
+name: Google Chat Notification
 
 on:
   issue_comment:
@@ -9,15 +9,29 @@ jobs:
     runs-on: ubuntu-latest
     if: github.event.issue.pull_request
     steps:
-      - name:  PR Comment notification to Google Space
+      - name: Set Action Type
+        id: action
+        run: |
+          if [ "${{ github.event.action }}" = "created" ]; then
+            echo "icon=💬" >> $GITHUB_OUTPUT
+            echo "action_text=New" >> $GITHUB_OUTPUT
+          elif [ "${{ github.event.action }}" = "edited" ]; then
+            echo "icon=✏️" >> $GITHUB_OUTPUT
+            echo "action_text=Edited" >> $GITHUB_OUTPUT
+          else
+            echo "icon=🗑️" >> $GITHUB_OUTPUT
+            echo "action_text=Deleted" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Send to Google Chat
         run: |
           curl -X POST -H "Content-Type: application/json" \
           -d '{
             "cardsV2": [{
               "card": {
                 "header": {
-                  "title": "New PR Comment 💬",
-                  "subtitle": "${{ github.event.issue.title }}"
+                  "title": "${{ steps.action.outputs.action_text }} PR Comment ${{ steps.action.outputs.icon }}",
+                  "subtitle": "<${{ github.event.issue.html_url }}|${{ github.event.issue.title }}>"
                 },
                 "sections": [{
                   "header": "Comment Details",
@@ -53,4 +67,4 @@ jobs:
               }
             }]
           }' \
-          "${{ vars.GOOGLE_CHAT_WEBHOOK }}"
+          "${{ secrets.GOOGLE_CHAT_WEBHOOK }}"
