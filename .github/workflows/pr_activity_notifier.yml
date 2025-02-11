@@ -1,0 +1,163 @@
+name: PR Activity Notification
+
+on:
+  pull_request:
+    types: [opened, closed, reopened, edited, ready_for_review, review_requested, assigned, unassigned, labeled, unlabeled]
+  pull_request_review:
+    types: [submitted, edited, dismissed]
+  pull_request_review_comment:
+    types: [created, edited, deleted]
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set Action Type
+        id: action
+        run: |
+          # For main PR events
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            case "${{ github.event.action }}" in
+              "opened")
+                echo "icon=🆕" >> $GITHUB_OUTPUT
+                echo "action_text=New PR Opened" >> $GITHUB_OUTPUT
+                ;;
+              "closed")
+                if [[ "${{ github.event.pull_request.merged }}" == "true" ]]; then
+                  echo "icon=🎉" >> $GITHUB_OUTPUT
+                  echo "action_text=PR Merged" >> $GITHUB_OUTPUT
+                else
+                  echo "icon=❌" >> $GITHUB_OUTPUT
+                  echo "action_text=PR Closed" >> $GITHUB_OUTPUT
+                fi
+                ;;
+              "reopened")
+                echo "icon=🔄" >> $GITHUB_OUTPUT
+                echo "action_text=PR Reopened" >> $GITHUB_OUTPUT
+                ;;
+              "ready_for_review")
+                echo "icon=👀" >> $GITHUB_OUTPUT
+                echo "action_text=PR Ready for Review" >> $GITHUB_OUTPUT
+                ;;
+              "review_requested")
+                echo "icon=📋" >> $GITHUB_OUTPUT
+                echo "action_text=Review Requested" >> $GITHUB_OUTPUT
+                ;;
+              *)
+                echo "icon=📝" >> $GITHUB_OUTPUT
+                echo "action_text=PR Updated" >> $GITHUB_OUTPUT
+                ;;
+            esac
+          # For PR review events
+          elif [[ "${{ github.event_name }}" == "pull_request_review" ]]; then
+            case "${{ github.event.review.state }}" in
+              "approved")
+                echo "icon=✅" >> $GITHUB_OUTPUT
+                echo "action_text=PR Approved" >> $GITHUB_OUTPUT
+                ;;
+              "changes_requested")
+                echo "icon=⚠️" >> $GITHUB_OUTPUT
+                echo "action_text=Changes Requested" >> $GITHUB_OUTPUT
+                ;;
+              "commented")
+                echo "icon=💭" >> $GITHUB_OUTPUT
+                echo "action_text=Review Comment Added" >> $GITHUB_OUTPUT
+                ;;
+            esac
+          # For PR review comment events
+          else
+            case "${{ github.event.action }}" in
+              "created")
+                echo "icon=💬" >> $GITHUB_OUTPUT
+                echo "action_text=New Review Comment" >> $GITHUB_OUTPUT
+                ;;
+              "edited")
+                echo "icon=✏️" >> $GITHUB_OUTPUT
+                echo "action_text=Review Comment Edited" >> $GITHUB_OUTPUT
+                ;;
+              "deleted")
+                echo "icon=🗑️" >> $GITHUB_OUTPUT
+                echo "action_text=Review Comment Deleted" >> $GITHUB_OUTPUT
+                ;;
+            esac
+          fi
+
+      - name: Create Payload
+        run: |
+          # Get the content based on event type
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            CONTENT="${{ github.event.pull_request.body }}"
+            USER="${{ github.event.pull_request.user.login }}"
+            TITLE="${{ github.event.pull_request.title }}"
+            URL="${{ github.event.pull_request.html_url }}"
+          elif [[ "${{ github.event_name }}" == "pull_request_review" ]]; then
+            CONTENT="${{ github.event.review.body }}"
+            USER="${{ github.event.review.user.login }}"
+            TITLE="${{ github.event.pull_request.title }}"
+            URL="${{ github.event.review.html_url }}"
+          else
+            CONTENT="${{ github.event.comment.body }}"
+            USER="${{ github.event.comment.user.login }}"
+            TITLE="${{ github.event.pull_request.title }}"
+            URL="${{ github.event.comment.html_url }}"
+          fi
+
+          # Create additional details for review requests
+          if [[ "${{ github.event.action }}" == "review_requested" ]]; then
+            EXTRA_INFO="Reviewer: @${{ github.event.requested_reviewer.login }}"
+          else
+            EXTRA_INFO=""
+          fi
+
+          cat > payload.json << EOF
+          {
+            "cardsV2": [{
+              "card": {
+                "header": {
+                  "title": "${{ steps.action.outputs.action_text }} ${{ steps.action.outputs.icon }}",
+                  "subtitle": "${TITLE}"
+                },
+                "sections": [{
+                  "header": "Details",
+                  "collapsible": false,
+                  "widgets": [{
+                    "decoratedText": {
+                      "text": "@${USER}",
+                      "startIcon": {
+                        "knownIcon": "PERSON"
+                      }
+                    }
+                  },
+                  {
+                    "textParagraph": {
+                      "text": "${CONTENT}"
+                    }
+                  },
+                  {
+                    "textParagraph": {
+                      "text": "${EXTRA_INFO}"
+                    }
+                  },
+                  {
+                    "buttonList": {
+                      "buttons": [{
+                        "text": "View PR",
+                        "onClick": {
+                          "openLink": {
+                            "url": "${URL}"
+                          }
+                        }
+                      }]
+                    }
+                  }]
+                }]
+              }
+            }]
+          }
+          EOF
+
+      - name: Send to Google Chat
+        run: |
+          curl -H "Content-Type: application/json" \
+            --data-binary @payload.json \
+            "${{ vars.GOOGLE_CHAT_WEBHOOK }}"
