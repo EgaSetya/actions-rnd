@@ -1,0 +1,48 @@
+name: PR Google Chat Notifier
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, closed]
+
+jobs:
+  notify_google_chat:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send Notification to Google Chat
+        env:
+          GOOGLE_CHAT_WEBHOOK: ${{ vars.GOOGLE_CHAT_WEBHOOK }}
+        run: |
+          PR_URL="${{ github.event.pull_request.html_url || github.event.issue.html_url }}"
+          PR_TITLE="${{ github.event.pull_request.title || github.event.issue.title }}"
+          PR_USER="${{ github.event.pull_request.user.login }}"
+          PR_MERGED="${{ github.event.pull_request.merged }}"
+
+          case "${{ github.event.action }}" in
+              opened)
+                ICON="🆕"
+                MESSAGE="$ICON *New Pull Request Opened*\n\n<${PR_URL}|$PR_TITLE>\n\n*By*: @$PR_USER"
+                ;;
+              synchronize)
+                ICON="🔄"
+                MESSAGE="$ICON *Pull Request Updated*\n\n<${PR_URL}|$PR_TITLE>\n\n*By*: @$PR_USER"
+                ;;
+              reopened)
+                ICON="♻️"
+                MESSAGE="$ICON *Pull Request Reopened*\n\n<${PR_URL}|$PR_TITLE>\n\n*By*: @$PR_USER"
+                ;;
+              closed)
+                if [[ "$PR_MERGED" == "true" ]]; then
+                  ICON="✅"
+                  MESSAGE="$ICON *Pull Request Merged*\n\n<${PR_URL}|$PR_TITLE>\n\n*By*: @$PR_USER"
+                else
+                  ICON="❌"
+                  MESSAGE="$ICON *Pull Request Closed (Not Merged)*\n\n<${PR_URL}|$PR_TITLE>\n\n*By*: @$PR_USER"
+                fi
+                ;;
+            esac
+
+          echo "Sending message: $MESSAGE"
+
+          curl -X POST -H 'Content-Type: application/json' \
+            -d "{\"text\": \"$MESSAGE\"}" \
+            "$GOOGLE_CHAT_WEBHOOK"

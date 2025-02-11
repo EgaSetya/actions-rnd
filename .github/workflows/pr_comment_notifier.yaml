@@ -1,0 +1,56 @@
+name: PR Comment Google Chat Notifier
+
+on:
+  issue_comment:
+    types: [created, edited, deleted]
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    if: github.event.issue.pull_request
+    steps:
+      - name:  PR Comment notification to Google Chat
+        run: |
+          curl -X POST -H "Content-Type: application/json" \
+          -d '{
+            "cardsV2": [{
+              "card": {
+                "header": {
+                  "title": "New PR Comment 💬",
+                  "subtitle": "${{ github.event.issue.title }}"
+                },
+                "sections": [{
+                  "header": "Comment Details",
+                  "collapsible": false,
+                  "widgets": [{
+                    "decoratedText": {
+                      "text": "@${{ github.event.comment.user.login }}",
+                      "startIcon": {
+                        "knownIcon": "PERSON"
+                      }
+                    }
+                  },
+                  {
+                    "textParagraph": {
+                      "text": "${{ github.event.comment.body }}"
+                    }
+                  }]
+                },
+                {
+                  "widgets": [{
+                    "buttonList": {
+                      "buttons": [{
+                        "text": "View Comment",
+                        "onClick": {
+                          "openLink": {
+                            "url": "${{ github.event.comment.html_url }}"
+                          }
+                        }
+                      }]
+                    }
+                  }]
+                }]
+              }
+            }]
+          }' \
+          "${{ vars.GOOGLE_CHAT_WEBHOOK }}"
