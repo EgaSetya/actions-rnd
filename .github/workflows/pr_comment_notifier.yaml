@@ -86,7 +86,9 @@ jobs:
         run: |
           # Get the content based on event type
           if [[ "${{ github.event_name }}" == "pull_request" ]]; then
-            CONTENT="${{ github.event.pull_request.body }}"
+            if [[ "${{ github.event.action }}" == "opened" ]] then
+              CONTENT="${{ github.event.pull_request.body }}"
+            fi
             USER="${{ github.event.pull_request.user.login }}"
             TITLE="${{ github.event.pull_request.title }}"
             URL="${{ github.event.pull_request.html_url }}"
@@ -128,12 +130,12 @@ jobs:
                   {
                     "decoratedText": {
                       "topLabel": "Reviewer",
-                      "text": "@${EXTRA_INFO}",
+                      "text": "${EXTRA_INFO}",
                       "startIcon": {
                         "knownIcon": "MULTIPLE_PEOPLE"
                       }
                     }
-                  }
+                  },
                   {
                     "textParagraph": {
                       "text": "${CONTENT}"
