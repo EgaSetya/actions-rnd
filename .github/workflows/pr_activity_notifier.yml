@@ -1,8 +1,8 @@
-name: PR Activity Notificatier
+name: PR Activity Notification
 
 on:
   pull_request:
-    types: [opened, closed, reopened, edited, ready_for_review, labeled, unlabeled]
+    types: [opened, closed, reopened, edited, ready_for_review, review_requested, assigned, unassigned, labeled, unlabeled, synchronize]
   pull_request_review:
     types: [submitted, edited, dismissed]
   pull_request_review_comment:
@@ -35,6 +35,19 @@ jobs:
                 echo "icon=🔄" >> $GITHUB_OUTPUT
                 echo "action_text=PR Reopened" >> $GITHUB_OUTPUT
                 ;;
+              "ready_for_review")
+                echo "icon=👀" >> $GITHUB_OUTPUT
+                echo "action_text=PR Ready for Review" >> $GITHUB_OUTPUT
+                ;;
+              "review_requested")
+                echo "icon=📋" >> $GITHUB_OUTPUT
+                echo "action_text=Review Requested" >> $GITHUB_OUTPUT
+                ;;
+              "synchronize")
+                echo "icon=📝" >> $GITHUB_OUTPUT
+                echo "action_text=New Commit Pushed" >> $GITHUB_OUTPUT
+                ;;
+              *)
                 echo "icon=📝" >> $GITHUB_OUTPUT
                 echo "action_text=PR Updated" >> $GITHUB_OUTPUT
                 ;;
@@ -77,7 +90,11 @@ jobs:
         run: |
           # Get the content based on event type
           if [[ "${{ github.event_name }}" == "pull_request" ]]; then
-            CONTENT="${{ github.event.pull_request.body }}"
+            if [[ "${{ github.event.action }}" == "review_requested" ]]; then
+              CONTENT="${{ github.event.pull_request.body }}"
+            elif [[ "${{ github.event.action }}" == "synchronize" ]]; then
+              CONTENT="Latest commit: ${{ github.event.pull_request.head.sha }}"
+            fi
             USER="${{ github.event.pull_request.user.login }}"
             TITLE="${{ github.event.pull_request.title }}"
             URL="${{ github.event.pull_request.html_url }}"
@@ -93,8 +110,31 @@ jobs:
             URL="${{ github.event.comment.html_url }}"
           fi
 
-          EXTRA_INFO="Reviewer: @${{ github.event.requested_reviewer.login }}"
+          # Create additional details for review requests
+          EXTRA_INFO=""
+          if [[ "${{ github.event.action }}" == "review_requested" && ! -z "${{ github.event.requested_reviewer.login }}" ]]; then
+            EXTRA_INFO="Reviewer: @${{ github.event.requested_reviewer.login }}"
+          fi
 
+          # Start building the widgets array
+          WIDGETS="["
+          
+          # Add author widget
+          WIDGETS+='{"decoratedText": {"topLabel": "Author","text": "@'${USER}'","startIcon": {"knownIcon": "PERSON"}}}'
+
+          # Add reviewer widget if EXTRA_INFO is not empty
+          if [[ ! -z "${EXTRA_INFO}" ]]; then
+            WIDGETS+=',{"decoratedText": {"topLabel": "Reviewer","text": "'${EXTRA_INFO}'","startIcon": {"knownIcon": "MULTIPLE_PEOPLE"}}}'
+          fi
+
+          # Add content and button widgets
+          if [[ ! -z "${CONTENT}" ]]; then
+            WIDGETS+=',{"textParagraph": {"text": "'${CONTENT}'"}}'
+          fi
+          WIDGETS+=',{"buttonList": {"buttons": [{"text": "View PR","onClick": {"openLink": {"url": "'${URL}'"}}}]}}'
+          WIDGETS+="]"
+
+          # Create the full payload
           cat > payload.json << EOF
           {
             "cardsV2": [{
@@ -106,41 +146,7 @@ jobs:
                 "sections": [{
                   "header": "Details",
                   "collapsible": false,
-                  "widgets": [{
-                    "decoratedText": {
-                      "topLabel": "Author"
-                      "text": "@${USER}",
-                      "startIcon": {
-                        "knownIcon": "PERSON"
-                      }
-                    }
-                  },
-                  {
-                    "decoratedText": {
-                      "topLabel": "Reviewer"
-                      "text": "@${EXTRA_INFO}",
-                      "startIcon": {
-                        "knownIcon": "MULTIPLE_PEOPLE"
-                      }
-                    }
-                  }
-                  {
-                    "textParagraph": {
-                      "text": "${CONTENT}"
-                    }
-                  },
-                  {
-                    "buttonList": {
-                      "buttons": [{
-                        "text": "View PR",
-                        "onClick": {
-                          "openLink": {
-                            "url": "${URL}"
-                          }
-                        }
-                      }]
-                    }
-                  }]
+                  "widgets": ${WIDGETS}
                 }]
               }
             }]
