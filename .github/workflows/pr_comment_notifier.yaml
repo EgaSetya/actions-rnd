@@ -90,7 +90,7 @@ jobs:
         run: |
           # Get the content based on event type
           if [[ "${{ github.event_name }}" == "pull_request" ]]; then
-            if [[ "${{ github.event.action }}" == "review_requested" ]]; then
+            if [[ "${{ github.event.action }}" == "opened" ]]; then
               CONTENT="${{ github.event.pull_request.body }}"
             elif [[ "${{ github.event.action }}" == "synchronize" ]]; then
               CONTENT="Latest commit: ${{ github.event.pull_request.head.sha }}"
