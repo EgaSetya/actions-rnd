@@ -1,8 +1,8 @@
-name: PR Activity Notification
+name: PR Activity Notificatier
 
 on:
   pull_request:
-    types: [opened, closed, reopened, edited, ready_for_review, review_requested, assigned, unassigned, labeled, unlabeled]
+    types: [opened, closed, reopened, edited, ready_for_review, labeled, unlabeled]
   pull_request_review:
     types: [submitted, edited, dismissed]
   pull_request_review_comment:
@@ -35,15 +35,6 @@ jobs:
                 echo "icon=🔄" >> $GITHUB_OUTPUT
                 echo "action_text=PR Reopened" >> $GITHUB_OUTPUT
                 ;;
-              "ready_for_review")
-                echo "icon=👀" >> $GITHUB_OUTPUT
-                echo "action_text=PR Ready for Review" >> $GITHUB_OUTPUT
-                ;;
-              "review_requested")
-                echo "icon=📋" >> $GITHUB_OUTPUT
-                echo "action_text=Review Requested" >> $GITHUB_OUTPUT
-                ;;
-              *)
                 echo "icon=📝" >> $GITHUB_OUTPUT
                 echo "action_text=PR Updated" >> $GITHUB_OUTPUT
                 ;;
@@ -102,12 +93,7 @@ jobs:
             URL="${{ github.event.comment.html_url }}"
           fi
 
-          # Create additional details for review requests
-          if [[ "${{ github.event.action }}" == "review_requested" ]]; then
-            EXTRA_INFO="Reviewer: @${{ github.event.requested_reviewer.login }}"
-          else
-            EXTRA_INFO=""
-          fi
+          EXTRA_INFO="Reviewer: @${{ github.event.requested_reviewer.login }}"
 
           cat > payload.json << EOF
           {
@@ -122,6 +108,7 @@ jobs:
                   "collapsible": false,
                   "widgets": [{
                     "decoratedText": {
+                      "topLabel": "Author"
                       "text": "@${USER}",
                       "startIcon": {
                         "knownIcon": "PERSON"
@@ -129,13 +116,17 @@ jobs:
                     }
                   },
                   {
-                    "textParagraph": {
-                      "text": "${CONTENT}"
+                    "decoratedText": {
+                      "topLabel": "Reviewer"
+                      "text": "@${EXTRA_INFO}",
+                      "startIcon": {
+                        "knownIcon": "MULTIPLE_PEOPLE"
+                      }
                     }
-                  },
+                  }
                   {
                     "textParagraph": {
-                      "text": "${EXTRA_INFO}"
+                      "text": "${CONTENT}"
                     }
                   },
                   {
