@@ -15,6 +15,7 @@ jobs:
       - name: Set Action Type
         id: action
         run: |
+          # [Previous Set Action Type step remains the same]
           # For main PR events
           if [[ "${{ github.event_name }}" == "pull_request" ]]; then
             case "${{ github.event.action }}" in
@@ -86,9 +87,7 @@ jobs:
         run: |
           # Get the content based on event type
           if [[ "${{ github.event_name }}" == "pull_request" ]]; then
-            if [[ "${{ github.event.action }}" == "opened" ]] then
-              CONTENT="${{ github.event.pull_request.body }}"
-            fi
+            CONTENT="${{ github.event.pull_request.body }}"
             USER="${{ github.event.pull_request.user.login }}"
             TITLE="${{ github.event.pull_request.title }}"
             URL="${{ github.event.pull_request.html_url }}"
@@ -103,13 +102,30 @@ jobs:
             TITLE="${{ github.event.pull_request.title }}"
             URL="${{ github.event.comment.html_url }}"
           fi
-          
-          if [[ "${{ github.event.action }}" == "review_requested" ]]; then
+
+          # Create additional details for review requests
+          EXTRA_INFO=""
+          if [[ "${{ github.event.action }}" == "review_requested" && ! -z "${{ github.event.requested_reviewer.login }}" ]]; then
             EXTRA_INFO="Reviewer: @${{ github.event.requested_reviewer.login }}"
-          else
-            EXTRA_INFO=""
           fi
 
+          # Start building the widgets array
+          WIDGETS="["
+          
+          # Add author widget
+          WIDGETS+='{"decoratedText": {"topLabel": "Author","text": "@'${USER}'","startIcon": {"knownIcon": "PERSON"}}}'
+
+          # Add reviewer widget if EXTRA_INFO is not empty
+          if [[ ! -z "${EXTRA_INFO}" ]]; then
+            WIDGETS+=',{"decoratedText": {"topLabel": "Reviewer","text": "'${EXTRA_INFO}'","startIcon": {"knownIcon": "MULTIPLE_PEOPLE"}}}'
+          fi
+
+          # Add content and button widgets
+          WIDGETS+=',{"textParagraph": {"text": "'${CONTENT}'"}}'
+          WIDGETS+=',{"buttonList": {"buttons": [{"text": "View PR","onClick": {"openLink": {"url": "'${URL}'"}}}]}}'
+          WIDGETS+="]"
+
+          # Create the full payload
           cat > payload.json << EOF
           {
             "cardsV2": [{
@@ -121,41 +137,7 @@ jobs:
                 "sections": [{
                   "header": "Details",
                   "collapsible": false,
-                  "widgets": [{
-                    "decoratedText": {
-                      "topLabel": "Author",
-                      "text": "@${USER}",
-                      "startIcon": {
-                        "knownIcon": "PERSON"
-                      }
-                    }
-                  },
-                  {
-                    "decoratedText": {
-                      "topLabel": "Reviewer",
-                      "text": "${EXTRA_INFO}",
-                      "startIcon": {
-                        "knownIcon": "MULTIPLE_PEOPLE"
-                      }
-                    }
-                  },
-                  {
-                    "textParagraph": {
-                      "text": "${CONTENT}"
-                    }
-                  },
-                  {
-                    "buttonList": {
-                      "buttons": [{
-                        "text": "View PR",
-                        "onClick": {
-                          "openLink": {
-                            "url": "${URL}"
-                          }
-                        }
-                      }]
-                    }
-                  }]
+                  "widgets": ${WIDGETS}
                 }]
               }
             }]
