@@ -1,4 +1,4 @@
-name: PR Activity Notification
+name: PR Activity Notifier
 
 on:
   pull_request:
@@ -6,7 +6,7 @@ on:
   pull_request_review:
     types: [submitted, edited, dismissed]
   pull_request_review_comment:
-    types: [created, edited, deleted]
+    types: [created]
 
 jobs:
   notify:
@@ -62,28 +62,27 @@ jobs:
               "changes_requested")
                 echo "icon=⚠️" >> $GITHUB_OUTPUT
                 echo "action_text=Changes Requested" >> $GITHUB_OUTPUT
-                echo "reviewer=${{ github.event.review.user.login }}" >> $GITHUB_OUTPUT
+                ;;
+              "commented")
+                # Only process comment if there's a review body
+                if [[ ! -z "${{ github.event.review.body }}" ]]; then
+                  echo "icon=💭" >> $GITHUB_OUTPUT
+                  echo "action_text=Review Comment Added" >> $GITHUB_OUTPUT
+                fi
                 ;;
             esac
           # For PR review comment events
-          else
+          elif [[ "${{ github.event_name }}" == "pull_request_review_comment" ]]; then
             case "${{ github.event.action }}" in
               "created")
                 echo "icon=💬" >> $GITHUB_OUTPUT
                 echo "action_text=New Review Comment" >> $GITHUB_OUTPUT
                 ;;
-              "edited")
-                echo "icon=✏️" >> $GITHUB_OUTPUT
-                echo "action_text=Review Comment Edited" >> $GITHUB_OUTPUT
-                ;;
-              "deleted")
-                echo "icon=🗑️" >> $GITHUB_OUTPUT
-                echo "action_text=Review Comment Deleted" >> $GITHUB_OUTPUT
-                ;;
             esac
           fi
 
       - name: Create Payload
+        if: steps.action.outputs.action_text != ''
         run: |
           # Get the content based on event type
           if [[ "${{ github.event_name }}" == "pull_request" ]]; then
@@ -100,12 +99,6 @@ jobs:
             USER="${{ github.event.review.user.login }}"
             TITLE="${{ github.event.pull_request.title }}"
             URL="${{ github.event.review.html_url }}"
-            
-            # Special handling for change requests
-            if [[ "${{ github.event.review.state }}" == "changes_requested" ]]; then
-              REVIEWER="${{ steps.action.outputs.reviewer }}"
-              CONTENT="🔍 Review by @${REVIEWER}:\n\n${CONTENT}"
-            fi
           else
             CONTENT="${{ github.event.comment.body }}"
             USER="${{ github.event.comment.user.login }}"
@@ -117,8 +110,6 @@ jobs:
           EXTRA_INFO=""
           if [[ "${{ github.event.action }}" == "review_requested" && ! -z "${{ github.event.requested_reviewer.login }}" ]]; then
             EXTRA_INFO="Reviewer: @${{ github.event.requested_reviewer.login }}"
-          elif [[ "${{ github.event.review.state }}" == "changes_requested" ]]; then
-            EXTRA_INFO="Changes requested by @${{ github.event.review.user.login }}"
           fi
 
           # Start building the widgets array
@@ -134,9 +125,7 @@ jobs:
 
           # Add content and button widgets
           if [[ ! -z "${CONTENT}" ]]; then
-            # Escape newlines and quotes in content
-            ESCAPED_CONTENT=$(echo "${CONTENT}" | sed 's/"/\\"/g' | sed ':a;N;$!ba;s/\n/\\n/g')
-            WIDGETS+=',{"textParagraph": {"text": "'"${ESCAPED_CONTENT}"'"}}'
+            WIDGETS+=',{"textParagraph": {"text": "'${CONTENT}'"}}'
           fi
           WIDGETS+=',{"buttonList": {"buttons": [{"text": "View PR","onClick": {"openLink": {"url": "'${URL}'"}}}]}}'
           WIDGETS+="]"
@@ -161,6 +150,7 @@ jobs:
           EOF
 
       - name: Send to Google Chat
+        if: steps.action.outputs.action_text != ''
         run: |
           curl -H "Content-Type: application/json" \
             --data-binary @payload.json \
