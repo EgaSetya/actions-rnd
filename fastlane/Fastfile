@@ -89,6 +89,26 @@
       )
     end
 
+    # Build the app with all dependencies
+    private_lane :update_signing_settings do |options|
+      project = Xcodeproj::Project.open(ENV["PROJECT_FILE"])
+      
+      # Find main target
+      target = project.targets.find { |t| t.name == 'BythenDev' }
+      
+      target.build_configurations.each do |config|
+        config.build_settings['CODE_SIGN_STYLE'] = 'Manual'
+        config.build_settings['DEVELOPMENT_TEAM'] = ENV["TEAM_ID"]
+        config.build_settings['PROVISIONING_PROFILE_SPECIFIER'] = ENV["PROVISIONING_PROFILE_NAME"]
+        config.build_settings['CODE_SIGN_IDENTITY'] = 'iPhone Developer'
+        
+        # Set framework signing to skip
+        config.build_settings['OTHER_CODE_SIGN_FLAGS'] = '--deep --no-sign-third-party-frameworks'
+      end
+      
+      project.save
+    end
+
     # Export .ipa file for a specific scheme
     private_lane :perform_build_app do |options|
       # Define configurations for each scheme
@@ -125,6 +145,8 @@
     
       # Use match to handle all certificates and profiles
       match_provision(type: config[:export_method])
+      
+      update_signing_settings
     
       # Build the app with all dependencies
       gym(
@@ -136,21 +158,8 @@
         include_symbols: true,
         include_bitcode: false,
         disable_package_automatic_updates: false,
+        xcargs: "-skipPackagePluginValidation --deep --no-sign-third-party-frameworks",
         export_xcargs: "-allowProvisioningUpdates",
-        export_options: {
-          signingStyle: "automatic",
-          provisioningProfiles: {
-            "ai.bythen.bythenapp.dev" => ENV["PROVISIONING_PROFILE_NAME"]
-          },
-          compileBitcode: false,
-          uploadBitcode: false,
-          uploadSymbols: true,
-          thinning: "<none>",
-          signingCertificate: nil,
-          installerSigningCertificate: nil,
-          iCloudContainerEnvironment: nil,
-          distributionBundleIdentifier: nil
-        }
       )
     end
 
