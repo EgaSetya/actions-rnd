@@ -34,6 +34,12 @@ jobs:
         run: |
           curl -sL https://firebase.tools | bash
 
+      - name: Install Provisioning Profiles
+        env:
+          MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
+          MATCH_GIT_BASIC_AUTHORIZATION: ${{ secrets.MATCH_GIT_BASIC_AUTHORIZATION }}
+        run: fastlane match development --readonly --verbose
+
       - name: Check Xcode Version
         run: xcodebuild -version
         
