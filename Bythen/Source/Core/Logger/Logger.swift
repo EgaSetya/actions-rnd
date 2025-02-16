@@ -7,7 +7,7 @@
 
 import Foundation
 import SwiftyBeaver
-import Sentry
+//import Sentry
 
 class Logger {
     
@@ -35,16 +35,16 @@ class Logger {
     
     static func logError(err: any Error, context: [String: Any]? = nil) {
         instance.log.error(err.localizedDescription, context: context)
-        if let ctx = context {
-            for (key, val) in ctx {
-                let crumb = Breadcrumb(level: .info, category: "metadata")
-                crumb.message = "\(key) : \(val)"
-                SentrySDK.addBreadcrumb(crumb)
-            }
-            SentrySDK.capture(error: err)
-        } else {
-            SentrySDK.capture(error: err)
-        }
-        
+//        if let ctx = context {
+//            for (key, val) in ctx {
+//                let crumb = Breadcrumb(level: .info, category: "metadata")
+//                crumb.message = "\(key) : \(val)"
+//                SentrySDK.addBreadcrumb(crumb)
+//            }
+//            SentrySDK.capture(error: err)
+//        } else {
+//            SentrySDK.capture(error: err)
+//        }
+//        
     }
 }

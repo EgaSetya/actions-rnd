@@ -6,7 +6,7 @@
 //
 
 import SwiftUI
-import Sentry
+//import Sentry
 
 enum AppPage {
     case chat
@@ -45,7 +45,7 @@ struct BythenApp: App {
                 setupPushNotificationManager()
                 UnityApp.initializeUnityApp()
                 setupWalletConnect()
-                setupSentry()
+//                setupSentry()
                 checkForUpdate()
                 UnityApi.shared.setupEnvironment(env: AppConfig.unityEnv)
             })
@@ -59,23 +59,23 @@ struct BythenApp: App {
         }
     }
     
-    private func setupSentry() {
-        SentrySDK.start { options in
-            options.dsn = AppConfig.sentryDsn
-            options.debug = false
-            options.tracesSampleRate = 1
-            options.environment = AppConfig.sentryEnv
-            options.beforeSend = { event in
-                if let exception = event.exceptions?.first {
-                    let value = exception.value
-                    if value.contains("ShakeGestureViewController") {
-                        return nil
-                    }
-                }
-                return event
-            }
-        }
-    }
+//    private func setupSentry() {
+//        SentrySDK.start { options in
+//            options.dsn = AppConfig.sentryDsn
+//            options.debug = false
+//            options.tracesSampleRate = 1
+//            options.environment = AppConfig.sentryEnv
+//            options.beforeSend = { event in
+//                if let exception = event.exceptions?.first {
+//                    let value = exception.value
+//                    if value.contains("ShakeGestureViewController") {
+//                        return nil
+//                    }
+//                }
+//                return event
+//            }
+//        }
+//    }
     
     private func checkForUpdate() {
         Task { @MainActor in

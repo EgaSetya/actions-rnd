@@ -654,11 +654,8 @@
 		B621A5ED2CA5B5F6003A1AD7 /* ChatsResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = B621A5EC2CA5B5F6003A1AD7 /* ChatsResponse.swift */; };
 		B621A5EE2CA5B635003A1AD7 /* ChatsResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = B621A5EC2CA5B5F6003A1AD7 /* ChatsResponse.swift */; };
 		B621A5EF2CA5B636003A1AD7 /* ChatsResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = B621A5EC2CA5B5F6003A1AD7 /* ChatsResponse.swift */; };
-		B62CAF392CEF6CA200EB73DA /* Sentry in Frameworks */ = {isa = PBXBuildFile; productRef = B62CAF382CEF6CA200EB73DA /* Sentry */; };
 		B62CAF3B2CEF6CA800EB73DA /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = B62CAF3A2CEF6CA800EB73DA /* FirebaseAnalytics */; };
-		B62CAF3D2CEF6CAE00EB73DA /* Sentry in Frameworks */ = {isa = PBXBuildFile; productRef = B62CAF3C2CEF6CAE00EB73DA /* Sentry */; };
 		B62CAF3F2CEF6CB400EB73DA /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = B62CAF3E2CEF6CB400EB73DA /* FirebaseAnalytics */; };
-		B62CAF412CEF6CBB00EB73DA /* Sentry in Frameworks */ = {isa = PBXBuildFile; productRef = B62CAF402CEF6CBB00EB73DA /* Sentry */; };
 		B62CAF432CEF6CC100EB73DA /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = B62CAF422CEF6CC100EB73DA /* FirebaseAnalytics */; };
 		B62CAF4D2CF059EB00EB73DA /* GoogleService-Info-dev.plist in Resources */ = {isa = PBXBuildFile; fileRef = B62CAF4B2CF03A6800EB73DA /* GoogleService-Info-dev.plist */; };
 		B62CAF542CF0668B00EB73DA /* View+Analytics.swift in Sources */ = {isa = PBXBuildFile; fileRef = B62CAF532CF0668B00EB73DA /* View+Analytics.swift */; };
@@ -1521,7 +1518,6 @@
 				6E194ACC2CB4362E00AEDCD7 /* MarkdownUI in Frameworks */,
 				9523E14A2D424DC500837F59 /* ReownAppKit in Frameworks */,
 				B6B6311E2CA29F0800BB9A09 /* FLEX in Frameworks */,
-				B62CAF3D2CEF6CAE00EB73DA /* Sentry in Frameworks */,
 				95148CA42D62F5A200223BC6 /* UnityFramework.framework in Frameworks */,
 				B606C4D22C92D0D900905D3C /* BetterCodable in Frameworks */,
 				B621A5DA2CA5007D003A1AD7 /* SwiftyBeaver in Frameworks */,
@@ -1543,7 +1539,6 @@
 				B606C4CE2C92D0C300905D3C /* BetterCodable in Frameworks */,
 				B6C08C102C7F82BD0055B72A /* Web3 in Frameworks */,
 				B6C08C152C7F83070055B72A /* Starscream in Frameworks */,
-				B62CAF412CEF6CBB00EB73DA /* Sentry in Frameworks */,
 				B62CAF432CEF6CC100EB73DA /* FirebaseAnalytics in Frameworks */,
 				B68C38272C8993160024F734 /* AlamofireImage in Frameworks */,
 				957A070A2D2D1B02004B88FE /* FirebaseMessaging in Frameworks */,
@@ -1582,7 +1577,6 @@
 				B62CAF3B2CEF6CA800EB73DA /* FirebaseAnalytics in Frameworks */,
 				B606C4D02C92D0D100905D3C /* BetterCodable in Frameworks */,
 				B6C08C542C80486F0055B72A /* Web3 in Frameworks */,
-				B62CAF392CEF6CA200EB73DA /* Sentry in Frameworks */,
 				B65F9EFE2C9B024B004529DE /* FLEX in Frameworks */,
 				B6C08C572C80486F0055B72A /* Starscream in Frameworks */,
 				6E194ACA2CB4362400AEDCD7 /* MarkdownUI in Frameworks */,
@@ -2891,7 +2885,6 @@
 				B6B6311D2CA29F0800BB9A09 /* FLEX */,
 				B621A5D92CA5007D003A1AD7 /* SwiftyBeaver */,
 				6E194ACB2CB4362E00AEDCD7 /* MarkdownUI */,
-				B62CAF3C2CEF6CAE00EB73DA /* Sentry */,
 				B62CAF3E2CEF6CB400EB73DA /* FirebaseAnalytics */,
 				957A070B2D2D1B13004B88FE /* FirebaseMessaging */,
 				95DCD8A22D36564C00AC7851 /* FirebasePerformance */,
@@ -2936,7 +2929,6 @@
 				B606C4CD2C92D0C300905D3C /* BetterCodable */,
 				B621A5D52CA50061003A1AD7 /* SwiftyBeaver */,
 				6E194ACD2CB4363700AEDCD7 /* MarkdownUI */,
-				B62CAF402CEF6CBB00EB73DA /* Sentry */,
 				B62CAF422CEF6CC100EB73DA /* FirebaseAnalytics */,
 				5F025E2C69C6E2F2E5715D8E /* FirebaseRemoteConfig */,
 				957A07092D2D1B02004B88FE /* FirebaseMessaging */,
@@ -3015,7 +3007,6 @@
 				B621A5D72CA50077003A1AD7 /* SwiftyBeaver */,
 				6E194AC92CB4362400AEDCD7 /* MarkdownUI */,
 				B6B499112CCB827900E391CF /* SDWebImageSwiftUI */,
-				B62CAF382CEF6CA200EB73DA /* Sentry */,
 				B62CAF3A2CEF6CA800EB73DA /* FirebaseAnalytics */,
 				29E8BBAA1AFEA685C10CF57F /* FirebaseRemoteConfig */,
 				957A07072D2D1AF6004B88FE /* FirebaseMessaging */,
@@ -3071,7 +3062,6 @@
 				6E194AC82CB4360F00AEDCD7 /* XCRemoteSwiftPackageReference "swift-markdown-ui" */,
 				B6B499102CCB827900E391CF /* XCRemoteSwiftPackageReference "SDWebImageSwiftUI" */,
 				B62CAF362CEF6C2400EB73DA /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
-				B62CAF372CEF6C9700EB73DA /* XCRemoteSwiftPackageReference "sentry-cocoa" */,
 				9523E1442D424D8200837F59 /* XCRemoteSwiftPackageReference "reown-swift" */,
 			);
 			productRefGroup = B6C08BC72C7F301C0055B72A /* Products */;
@@ -4909,14 +4899,6 @@
 				minimumVersion = 11.5.0;
 			};
 		};
-		B62CAF372CEF6C9700EB73DA /* XCRemoteSwiftPackageReference "sentry-cocoa" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://www.github.com/getsentry/sentry-cocoa";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 8.40.1;
-			};
-		};
 		B65F9EFC2C9B024B004529DE /* XCRemoteSwiftPackageReference "FLEX" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/FLEXTool/FLEX";
@@ -5153,30 +5135,15 @@
 			package = B621A5D42CA50061003A1AD7 /* XCRemoteSwiftPackageReference "SwiftyBeaver" */;
 			productName = SwiftyBeaver;
 		};
-		B62CAF382CEF6CA200EB73DA /* Sentry */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = B62CAF372CEF6C9700EB73DA /* XCRemoteSwiftPackageReference "sentry-cocoa" */;
-			productName = Sentry;
-		};
 		B62CAF3A2CEF6CA800EB73DA /* FirebaseAnalytics */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = B62CAF362CEF6C2400EB73DA /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = FirebaseAnalytics;
 		};
-		B62CAF3C2CEF6CAE00EB73DA /* Sentry */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = B62CAF372CEF6C9700EB73DA /* XCRemoteSwiftPackageReference "sentry-cocoa" */;
-			productName = Sentry;
-		};
 		B62CAF3E2CEF6CB400EB73DA /* FirebaseAnalytics */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = B62CAF362CEF6C2400EB73DA /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = FirebaseAnalytics;
-		};
-		B62CAF402CEF6CBB00EB73DA /* Sentry */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = B62CAF372CEF6C9700EB73DA /* XCRemoteSwiftPackageReference "sentry-cocoa" */;
-			productName = Sentry;
 		};
 		B62CAF422CEF6CC100EB73DA /* FirebaseAnalytics */ = {
 			isa = XCSwiftPackageProductDependency;

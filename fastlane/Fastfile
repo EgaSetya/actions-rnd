@@ -79,12 +79,13 @@
     # Fetch or manage provisioning profiles using match tool
     private_lane :match_provision do |options|
       match(
-        api_key:               fetch_api_key,
-        type:                  options[:type].gsub("-", ""),
-        readonly:              true, #options[:fetch_provision_only] ? true : false,
-        #force:                 options[:fetch_provision_only] ? false : true,
-        #clone_branch_directly: true,
-        shallow_clone:         true
+        api_key: fetch_api_key,
+        type: options[:type].gsub("-", ""),
+        readonly: true,
+        shallow_clone: true,
+        force_for_new_devices: true,
+        app_identifier: "ai.bythen.bythenapp.dev",  # Matches your profile in match repository
+        platform: "ios"
       )
     end
 
@@ -108,32 +109,34 @@
           scheme: "Bythen"
         }
       }
-
+    
       # Fetch scheme from input or set a default
       env = options[:configuration] || "dev"
       lane_context["ENVIRONMENT"] = env.upcase
       config = configurations[env]
       lane_context["SCHEME"] = config[:scheme]
-
+    
       if config.nil?
         UI.user_error!("Invalid scheme: #{scheme}. Please specify a valid scheme.")
       end
-
+    
       # Build and export the .ipa
       bump_build_number
-      #match_provision(type: config[:export_method], fetch_provision_only: true) # Match provisioning for the export method
-
-      update_code_signing_settings(
-        use_automatic_signing: false,
-        path: ENV["APP_XCODEPROJ"]
-      )
-      
+    
+      # Use match to handle all certificates and profiles
+      match_provision(type: config[:export_method])
+    
+      # Build the app with all dependencies
       gym(
         scheme: config[:scheme],
         export_method: config[:export_method],
         output_directory: ENV["OUTPUT_PATH"],
         project: ENV["PROJECT_FILE"],
-        output_name: "#{config[:output_name]}.ipa"
+        output_name: "#{config[:output_name]}.ipa",
+        include_symbols: true,
+        include_bitcode: false,
+        disable_package_automatic_updates: false,
+        export_xcargs: "-allowProvisioningUpdates"
       )
     end
 
