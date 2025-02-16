@@ -1,0 +1,12 @@
+{
+  "images" : [
+    {
+      "filename" : "disconnect-wallet.pdf",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}

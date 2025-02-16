@@ -1,0 +1,384 @@
+  # This file contains the fastlane.tools configuration
+  # You can find the documentation at https://docs.fastlane.tools
+  #
+  # For a list of all available actions, check out
+  #
+  #     https://docs.fastlane.tools/actions
+  #
+  # For a list of all available plugins, check out
+  #
+  #     https://docs.fastlane.tools/plugins/available-plugins
+  #
+
+  # Uncomment the line if you want fastlane to automatically update itself
+  # update_fastlane
+
+  default_platform(:ios)
+
+  before_all do |lane, options|
+    ENV["PROJECT_FILE"]      = 'Bythen.xcodeproj'
+    ENV["LOG_PATH"]          = './fastlane/log_output/'
+    ENV["OUTPUT_PATH"]       = './fastlane/output/'
+    ENV["SPACESHIP_2FA_SMS_DEFAULT_PHONE_NUMBER"] = '083834727347'
+  end
+
+  platform :ios do
+    def set_apple_id
+      # Set the file path
+      app_file_path   = "AppFile"
+      match_file_path = "MatchFile"
+    
+      # Read the contents of the file
+      app_file_contents   = File.read(app_file_path)
+      match_file_contents = File.read(match_file_path)
+    
+      # Replace the apple_id value inside the double quotes
+      apple_id = prompt(text: "Enter your Apple ID: ")
+      app_file_contents.gsub!(/apple_id "(.*?)"/,   "apple_id \"#{apple_id}\"")
+      match_file_contents.gsub!(/username "(.*?)"/, "username \"#{apple_id}\"")
+    
+      # Write the modified content back to the file
+      File.open(app_file_path, 'w') { |file| file.puts app_file_contents }
+      File.open(match_file_path, 'w') { |file| file.puts match_file_contents }
+    
+      # Set the phone number in case the token has expired
+      phone_number = ENV["SPACESHIP_2FA_SMS_DEFAULT_PHONE_NUMBER"] #prompt(text: "Enter the phone number associated with your Apple ID (e.g., '0812345678910'):")
+      #ENV["SPACESHIP_2FA_SMS_DEFAULT_PHONE_NUMBER"] = phone_number
+    end
+
+    # Generate build number for .ipa file
+    private_lane :bump_build_number do
+      build_number = Time.new.strftime("%Y%m%d%H%M")
+
+      puts "Updating build number to #{build_number} using agvtool"
+      
+      # Ensure you are in the correct directory
+      Dir.chdir(File.expand_path('../', __dir__)) do
+        result = `agvtool new-version -all #{build_number}`
+    
+        if $?.exitstatus != 0
+          puts "Failed to update build number: #{result}"
+        else
+          puts "Successfully updated build number to #{build_number}"
+        end
+      end
+    
+      ENV["BUILD_NUMBER"] = build_number
+    end
+
+    # Need to fix this later on, refer to https://docs.fastlane.tools/app-store-connect-api/
+    private_lane :fetch_api_key do
+      app_store_connect_api_key(
+        key_id:       "W4VAV5D995",
+        issuer_id:    "4b701018-068d-4325-8d61-1b31f2eaee29",
+        key_filepath: "./fastlane/Auth/AuthKey_W4VAV5D995.p8",
+        duration:     1200
+      )
+    end
+    
+    # Fetch or manage provisioning profiles using match tool
+    private_lane :match_provision do |options|
+      match(
+        api_key:               fetch_api_key,
+        type:                  options[:type].gsub("-", ""),
+        readonly:              options[:fetch_provision_only] ? true : false,
+        force:                 options[:fetch_provision_only] ? false : true,
+        clone_branch_directly: options[:fetch_provision_only] ? false : true,
+        shallow_clone:         true
+      )
+    end
+
+    # Export .ipa file for a specific scheme
+    private_lane :perform_build_app do |options|
+      # Define configurations for each scheme
+      configurations = {
+        "dev" => {
+          export_method: "development",
+          output_name: "BythenDev",
+          scheme: "BythenDev",
+        },
+        "staging" => {
+          export_method: "ad-hoc",
+          output_name: "BythenStaging",
+          scheme: "BythenDevUnity"
+        },
+        "prod" => {
+          export_method: "app-store",
+          output_name: "Bythen",
+          scheme: "Bythen"
+        }
+      }
+
+      # Fetch scheme from input or set a default
+      env = options[:configuration] || "dev"
+      lane_context["ENVIRONMENT"] = env.upcase
+      config = configurations[env]
+      lane_context["SCHEME"] = config[:scheme]
+
+      if config.nil?
+        UI.user_error!("Invalid scheme: #{scheme}. Please specify a valid scheme.")
+      end
+
+      # Build and export the .ipa
+      bump_build_number
+      match_provision(type: config[:export_method], fetch_provision_only: true) # Match provisioning for the export method
+      gym(
+        scheme: config[:scheme],
+        export_method: config[:export_method],
+        output_directory: ENV["OUTPUT_PATH"],
+        project: ENV["PROJECT_FILE"],
+        output_name: "#{config[:output_name]}.ipa"
+      )
+    end
+
+    # Wrapper for distributing the app via Testflight.
+    private_lane :testflight_distribution do
+      pilot(
+          apple_id:                          "6670246602",
+          skip_submission:                   false,
+          distribute_external:               false,
+          skip_waiting_for_build_processing: true
+      )
+    end
+
+    # Wrapper to extract ticket from current branch.
+    private_lane :extract_ticket_urls do
+      # Get the branch name
+      branch_name = sh("git rev-parse --abbrev-ref HEAD").strip
+      puts "Branch Name: '#{branch_name}'"
+    
+      # Get the commit title and full commit message
+      commit_title = sh("git log -1 --pretty=%s").strip
+      commit_message = sh("git log -1 --pretty=%B").strip
+
+      ENV["COMMIT_MESSAGE"] = commit_message
+    
+      # Regex to match ticket IDs (with or without square brackets)
+      regex = /\[?([A-Z]+-\d+)\]?/
+    
+      # Extract ticket IDs
+      ticket_ids_from_branch = branch_name.scan(regex).flatten
+      ticket_ids_from_title = commit_title.scan(regex).flatten
+      ticket_ids_from_message = commit_message.scan(regex).flatten
+    
+      # Combine all ticket IDs, removing duplicates
+      all_ticket_ids = (ticket_ids_from_branch + ticket_ids_from_title + ticket_ids_from_message).uniq
+      puts "All Tickets: #{all_ticket_ids}"
+    
+      # Array to store ticket URLs
+      ticket_urls = all_ticket_ids.map { |ticket_id| "https://tanooki.atlassian.net/browse/#{ticket_id}" }
+
+      if ticket_urls.any?
+        # Format the URLs with a prefix and join them with newlines
+        ENV["JIRA_TICKET_URLS"] = ticket_urls.map { |url| "・ #{url}" }.join("\n")
+      else
+        puts "No ticket IDs found in branch name, commit title, or commit message."
+      end
+    end    
+    
+    # Wrapper to release notes that contains all ticket mentioned in commit
+    private_lane :create_release_notes do
+      extract_ticket_urls
+
+      lane_context["RELEASE_NOTES"] = "New Development Build!\n\n#{ENV["JIRA_TICKET_URLS"]}\n\nDownload the build to start testing"
+    end
+
+    # Wrapper for distributing the app via Firebase App Distribution.
+    private_lane :firebase_distribution do
+      app_id = "1:1005285714164:ios:b468d8c002c4aa90e256a1"
+      project_id = "bythen-app-5602d"
+      web_api_key = "AIzaSyC4ZpAHZjKFeB_LJIqvuKqdxiXF5sPEqrM"
+
+      firebase_app_distribution(
+        app:           app_id,
+        groups:        "tech-tester, product-tester",
+        release_notes: lane_context["RELEASE_NOTES"],
+        service_credentials_file: "./fastlane/Auth/bythen-app-5602d-firebase-adminsdk-awy79-06e31490a7.json"
+      )
+
+      release_details = lane_context[SharedValues::FIREBASE_APP_DISTRO_RELEASE]
+
+      puts "FIREBASE RELEASE DETAILS: #{release_details}"
+
+      if release_details && release_details[:testingUri]
+        testing_uri = release_details[:testingUri]
+        ENV["FIREBASE_TESTING_URL"] = testing_uri
+      else
+        UI.error("Unable to retrieve the testing URI. Please check the distribution process.")
+      end
+    end
+
+    # Wrapper to send message about app build distribution
+    private_lane :notify_google_chat do
+      environment = lane_context["ENVIRONMENT"]
+      app_version = get_version_number(
+        xcodeproj: ENV["PROJECT_FILE"],
+        target: lane_context["SCHEME"]
+      )
+      build_number = ENV["BUILD_NUMBER"]
+      download_url = ENV["FIREBASE_TESTING_URL"]
+      ticket_links = ENV["TICKET_LINKS"]
+
+      commit_author = last_git_commit[:author]
+      commit_message = ENV["COMMIT_MESSAGE"]
+
+      puts "Commit Message: #{commit_message}"
+    
+      message = {
+        "cardsV2": [
+          {
+            "cardId": "bythen_ios_build_report",
+            "card": {
+              "name": "Bythen iOS Build Report",
+              "header": {
+                "title": "📦 Bythen iOS Build Report"
+              },
+              "sections": [
+                {
+                  "widgets": [
+                    {
+                      "textParagraph": {
+                        "text": "👤 Author & Commit Details"
+                      }
+                    },
+                    {
+                      "decoratedText": {
+                        "topLabel": "Author",
+                        "text": "#{commit_author}"
+                      }
+                    },
+                    {
+                      "decoratedText": {
+                        "topLabel": "Commit",
+                        "text": commit_message,
+                        "wrapText": true
+                      }
+                    }
+                  ]
+                },
+                {
+                  "widgets": [
+                    {
+                      "textParagraph": {
+                        "text": "⚙️ Build Information"
+                      }
+                    },
+                    {
+                      "decoratedText": {
+                        "topLabel": "Version",
+                        "text": "#{app_version}(#{build_number})"
+                      }
+                    },
+                    {
+                      "decoratedText": {
+                        "topLabel": "Environment",
+                        "text": "#{environment == 'PROD' ? '✈️ PRODUCTION ✈️' : '🔥 STAGING 🔥'}"
+                      }
+                    },
+                    environment != 'PROD' ? {
+                      "buttonList": {
+                        "buttons": [
+                          {
+                            "text": "Download Build",
+                            "onClick": {
+                              "openLink": {
+                                "url": "https://google.com"
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    } : nil
+                  ]
+                },
+                {
+                  "widgets": [
+                    {
+                      "textParagraph": {
+                        "text": environment == 'PROD' ? "You can download PRODUCTION build from Tesflight. But, please note that TestFlight builds may take a while to be available for testing. When you have a moment, please test the build and let us (iOS Team) know if you find any issues." : "The latest iOS build is ready for testing. When you have a moment, please test the build and let us (iOS Team) know if you find any issues."
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      }.to_json
+    
+      google_chat_notify(message: message)
+    end
+
+    desc "Perform the fetch provisioning profile action."
+    lane :fetch_provisioning_profile do
+      match_provision(type: "development", fetch_provision_only: true)
+      match_provision(type: "adhoc",       fetch_provision_only: true)
+      match_provision(type: "appstore",    fetch_provision_only: true)
+    end
+
+    desc "Perform the update provisioning profile action."
+    lane :update_provisioning_profile do
+      match_provision(type: "development", fetch_provision_only: false)
+      match_provision(type: "adhoc",       fetch_provision_only: false)
+      match_provision(type: "appstore",    fetch_provision_only: false)
+    end
+
+    desc "Interactively register a new device and synchronize code signing."
+    lane :register_a_device do
+      # Use this private lane on CI when appstore team API key available
+      #set_apple_id
+
+      device_name = prompt(text: "Enter the device name: ")
+      device_udid = prompt(text: "Enter the device UDID: ")
+      device_hash = { device_name => device_udid }
+      register_devices(devices: device_hash)
+      update_provisioning_profile
+
+      sh("git checkout Appfile Matchfile")
+    end
+
+    desc "Distribute the App via Testflight from local machine"
+    lane :deploy_production do
+      perform_build_app configuration:"prod"
+
+      testflight_distribution
+      extract_ticket_urls
+      notify_google_chat
+    end
+
+    desc "Distribute the App via Firebase App Distribution from local machine"
+    lane :deploy_staging do |options|
+      release_notes = options[:release_notes]
+      perform_build_app configuration:"staging"
+
+      if release_notes.nil? || release_notes.empty?
+        UI.message("Release notes not provided or empty. Creating new release notes...")
+        
+        create_release_notes
+      else
+        UI.message("Using provided release notes: #{release_notes}")
+
+        lane_context["RELEASE_NOTES"] = release_notes
+      end
+      firebase_distribution
+      notify_google_chat
+    end
+
+    desc "Distribute the App with dev scheme via Firebase App Distribution from local machine"
+    lane :deploy_dev do |options|
+      release_notes = options[:release_notes]
+      perform_build_app configuration:"dev"
+
+      if release_notes.nil? || release_notes.empty?
+        UI.message("Release notes not provided or empty. Creating new release notes...")
+        
+        create_release_notes
+      else
+        UI.message("Using provided release notes: #{release_notes}")
+
+        lane_context["RELEASE_NOTES"] = release_notes
+      end
+      firebase_distribution
+      notify_google_chat
+    end
+  end

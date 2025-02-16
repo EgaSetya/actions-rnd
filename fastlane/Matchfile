@@ -1,0 +1,14 @@
+git_url("git@github.com:tanookiai/bythen-ios-credentials.git")
+
+storage_mode("git")
+
+type("development") # The default type, can be: appstore, adhoc, enterprise or development
+
+app_identifier([
+    "ai.bythen.bythenapp",
+    "ai.bythen.bythenapp.dev"
+])
+
+# When using CI, this should be one centralized iOS team email
+# For now, you can it to your apple id email
+username "egasp57@gmail.com"
