@@ -3072,7 +3072,6 @@
 				B6B499102CCB827900E391CF /* XCRemoteSwiftPackageReference "SDWebImageSwiftUI" */,
 				B62CAF362CEF6C2400EB73DA /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
 				B62CAF372CEF6C9700EB73DA /* XCRemoteSwiftPackageReference "sentry-cocoa" */,
-				959BCF862D2BC125000FC5D8 /* XCRemoteSwiftPackageReference "YouTubePlayerKit" */,
 				9523E1442D424D8200837F59 /* XCRemoteSwiftPackageReference "reown-swift" */,
 			);
 			productRefGroup = B6C08BC72C7F301C0055B72A /* Products */;
@@ -4868,14 +4867,6 @@
 			requirement = {
 				kind = upToNextMajorVersion;
 				minimumVersion = 1.2.1;
-			};
-		};
-		959BCF862D2BC125000FC5D8 /* XCRemoteSwiftPackageReference "YouTubePlayerKit" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "git@github.com:SvenTiigi/YouTubePlayerKit.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 1.9.0;
 			};
 		};
 		A74627BF1312F0293AF7DEC2 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
