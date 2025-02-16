@@ -79,39 +79,17 @@
     # Fetch or manage provisioning profiles using match tool
     private_lane :match_provision do |options|
       match(
-        api_key: fetch_api_key,
-        type: options[:type].gsub("-", ""),
-        readonly: true,
-        shallow_clone: true,
-        force_for_new_devices: true,
-        app_identifier: "ai.bythen.bythenapp.dev",  # Matches your profile in match repository
-        platform: "ios"
+        api_key:               fetch_api_key,
+        type:                  options[:type].gsub("-", ""),
+        readonly:              true, #options[:fetch_provision_only] ? true : false,
+        #force:                 options[:fetch_provision_only] ? false : true,
+        #clone_branch_directly: true,
+        shallow_clone:         true
       )
-    end
-
-    # Build the app with all dependencies
-    private_lane :update_signing_settings do |options|
-      project = Xcodeproj::Project.open(ENV["PROJECT_FILE"])
-      
-      # Find main target
-      target = project.targets.find { |t| t.name == 'BythenDev' }
-      
-      target.build_configurations.each do |config|
-        config.build_settings['CODE_SIGN_STYLE'] = 'Manual'
-        config.build_settings['DEVELOPMENT_TEAM'] = ENV["TEAM_ID"]
-        config.build_settings['PROVISIONING_PROFILE_SPECIFIER'] = ENV["PROVISIONING_PROFILE_NAME"]
-        config.build_settings['CODE_SIGN_IDENTITY'] = 'iPhone Developer'
-        
-        # Set framework signing to skip
-        config.build_settings['OTHER_CODE_SIGN_FLAGS'] = '--deep --no-sign-third-party-frameworks'
-      end
-      
-      project.save
     end
 
     # Export .ipa file for a specific scheme
     private_lane :perform_build_app do |options|
-      # Define configurations for each scheme
       configurations = {
         "dev" => {
           export_method: "development",
@@ -129,26 +107,19 @@
           scheme: "Bythen"
         }
       }
-    
-      # Fetch scheme from input or set a default
+  
       env = options[:configuration] || "dev"
       lane_context["ENVIRONMENT"] = env.upcase
       config = configurations[env]
       lane_context["SCHEME"] = config[:scheme]
-    
+  
       if config.nil?
         UI.user_error!("Invalid scheme: #{scheme}. Please specify a valid scheme.")
       end
-    
-      # Build and export the .ipa
+  
       bump_build_number
-    
-      # Use match to handle all certificates and profiles
       match_provision(type: config[:export_method])
-      
-      update_signing_settings
-    
-      # Build the app with all dependencies
+  
       gym(
         scheme: config[:scheme],
         export_method: config[:export_method],
@@ -157,9 +128,11 @@
         output_name: "#{config[:output_name]}.ipa",
         include_symbols: true,
         include_bitcode: false,
-        disable_package_automatic_updates: false,
-        xcargs: "-skipPackagePluginValidation --deep --no-sign-third-party-frameworks",
-        export_xcargs: "-allowProvisioningUpdates",
+        export_options: {
+          method: config[:export_method],
+          signingStyle: "manual",
+          compileBitcode: false
+        }
       )
     end
 
@@ -369,45 +342,40 @@
       sh("git checkout Appfile Matchfile")
     end
 
-    desc "Distribute the App via Testflight from local machine"
+    desc "Distribute the App via Testflight"
     lane :deploy_production do
       perform_build_app configuration:"prod"
-
       testflight_distribution
       extract_ticket_urls
       notify_google_chat
     end
 
-    desc "Distribute the App via Firebase App Distribution from local machine"
+    desc "Distribute the App via Firebase App Distribution"
     lane :deploy_staging do |options|
       release_notes = options[:release_notes]
       perform_build_app configuration:"staging"
 
       if release_notes.nil? || release_notes.empty?
         UI.message("Release notes not provided or empty. Creating new release notes...")
-        
         create_release_notes
       else
         UI.message("Using provided release notes: #{release_notes}")
-
         lane_context["RELEASE_NOTES"] = release_notes
       end
       firebase_distribution
       notify_google_chat
     end
 
-    desc "Distribute the App with dev scheme via Firebase App Distribution from local machine"
+    desc "Distribute the App with dev scheme via Firebase"
     lane :deploy_dev do |options|
       release_notes = options[:release_notes]
       perform_build_app configuration:"dev"
 
       if release_notes.nil? || release_notes.empty?
         UI.message("Release notes not provided or empty. Creating new release notes...")
-        
         create_release_notes
       else
         UI.message("Using provided release notes: #{release_notes}")
-
         lane_context["RELEASE_NOTES"] = release_notes
       end
       firebase_distribution
