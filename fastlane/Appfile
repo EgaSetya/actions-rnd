@@ -1,0 +1,7 @@
+# When using CI, this should be one centralized iOS team email
+# For now, you can it to your apple id email
+apple_id "egasp57@gmail.com"
+
+team_id "KXUAJWQWVP"
+
+itc_team_name "PT. MASA AKAN DATANG"

@@ -1,0 +1,34 @@
+# OS X Finder
+.DS_Store
+
+# Xcode
+xcuserdata/
+*.xcworkspace/
+*.xcodeproj/project.xcworkspace/
+*.xcodeproj/xcuserdata/
+*.xcodeproj/xcshareddata/xcdebugger/
+*.xcodeproj/xcshareddata/xcschemes/xcschememanagement.plist
+
+# Swift Package Manager
+Packages/
+Package.pins
+Package.resolved
+Sources/*/Info.plist
+**/.swiftpm/
+**/.build/
+
+# Automatic backup files
+*~.nib/
+*.swp
+*~
+*.dat
+*.dep
+
+# Unity Project
+Unity-Iphone.xcodeproj/*
+
+# Fastlane
+fastlane/output
+fastlane/report.xml
+fastlane/report.xml
+fastlane/.env.default

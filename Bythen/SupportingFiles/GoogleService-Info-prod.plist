@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>API_KEY</key>
+	<string>AIzaSyBJeziW2m5DC5nbm7M-XWfIFK8q9K6NKIk</string>
+	<key>GCM_SENDER_ID</key>
+	<string>836171255260</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>ai.bythen.bythenapp</string>
+	<key>PROJECT_ID</key>
+	<string>bythen-app-prod</string>
+	<key>STORAGE_BUCKET</key>
+	<string>bythen-app-prod.firebasestorage.app</string>
+	<key>IS_ADS_ENABLED</key>
+	<false/>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false/>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true/>
+	<key>IS_GCM_ENABLED</key>
+	<true/>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true/>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:836171255260:ios:1e6e7ca9b9f0ddf7239319</string>
+	<key>FirebaseAutomaticScreenReportingEnabled</key>
+	<false/>
+</dict>
+</plist>

@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLName</key>
+			<string>ai.bythen.bythenapp.dev</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>bythen</string>
+			</array>
+		</dict>
+	</array>
+	<key>FirebaseAppDelegateProxyEnabled</key>
+	<false/>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
+	<key>UIAppFonts</key>
+	<array>
+		<string>FoundersGrotesk-Medium.otf</string>
+		<string>FoundersGrotesk-Regular.otf</string>
+		<string>FoundersGroteskCondensed-Semibold.otf</string>
+		<string>NeueMontreal-Bold.ttf</string>
+		<string>NeueMontreal-Medium.ttf</string>
+		<string>NeueMontreal-Regular.ttf</string>
+		<string>NeueMontreal-Light.ttf</string>
+		<string>DMMono-Regular.ttf</string>
+		<string>DMMono-Medium.ttf</string>
+		<string>DrukWide-Bold.ttf</string>
+	</array>
+	<key>UILaunchScreen</key>
+	<dict>
+		<key>UIColorName</key>
+		<string>launch-screen-color</string>
+		<key>UIImageName</key>
+		<string>launch-screen-image</string>
+	</dict>
+</dict>
+</plist>
