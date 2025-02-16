@@ -82,7 +82,7 @@
         api_key:               fetch_api_key,
         type:                  options[:type].gsub("-", ""),
         readonly:              options[:fetch_provision_only] ? true : false,
-        force:                 true,
+        force:                 options[:fetch_provision_only] ? false : true,
         clone_branch_directly: true,
         shallow_clone:         true
       )
