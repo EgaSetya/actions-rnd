@@ -136,7 +136,21 @@
         include_symbols: true,
         include_bitcode: false,
         disable_package_automatic_updates: false,
-        export_xcargs: "-allowProvisioningUpdates"
+        export_xcargs: "-allowProvisioningUpdates",
+        export_options: {
+          signingStyle: "automatic",
+          provisioningProfiles: {
+            "ai.bythen.bythenapp.dev" => ENV["PROVISIONING_PROFILE_NAME"]
+          },
+          compileBitcode: false,
+          uploadBitcode: false,
+          uploadSymbols: true,
+          thinning: "<none>",
+          signingCertificate: nil,
+          installerSigningCertificate: nil,
+          iCloudContainerEnvironment: nil,
+          distributionBundleIdentifier: nil
+        }
       )
     end
 
