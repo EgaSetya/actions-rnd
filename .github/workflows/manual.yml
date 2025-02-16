@@ -33,12 +33,14 @@ jobs:
         if: ${{ github.event.inputs.distribution_platform == 'firebase' }}
         run: |
           curl -sL https://firebase.tools | bash
-          
+
+      - name: Set up Fastlane session
+        run: echo "FASTLANE_SESSION=${{ secrets.FASTLANE_SESSION }}" >> $GITHUB_ENV
+        
       - name: Setup certificates and provisioning profiles
         env:
           MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
           MATCH_GIT_BASIC_AUTHORIZATION: ${{ secrets.MATCH_GIT_BASIC_AUTHORIZATION }}
-          FASTLANE_PASSWORD: ${{ secrets.FASTLANE_PASSWORD }}
         run: |
           fastlane match development
           fastlane match adhoc
