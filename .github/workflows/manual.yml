@@ -34,18 +34,6 @@ jobs:
         run: |
           curl -sL https://firebase.tools | bash
 
-      - name: Set up Fastlane session
-        run: echo "FASTLANE_SESSION=${{ secrets.FASTLANE_SESSION }}" >> $GITHUB_ENV
-        
-      - name: Setup certificates and provisioning profiles
-        env:
-          MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
-          MATCH_GIT_BASIC_AUTHORIZATION: ${{ secrets.MATCH_GIT_BASIC_AUTHORIZATION }}
-        run: |
-          fastlane match development
-          fastlane match adhoc
-          fastlane match appstore
-
       - name: Deploy to Firebase
         if: ${{ github.event.inputs.distribution_platform == 'firebase' }}
         env:
