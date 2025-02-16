@@ -39,6 +39,8 @@ jobs:
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
           FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
+          MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
+          MATCH_GIT_BASIC_AUTHORIZATION: ${{ secrets.MATCH_GIT_BASIC_AUTHORIZATION }}
         run: |
           fastlane deploy_staging
 
