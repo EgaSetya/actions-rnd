@@ -122,6 +122,12 @@
       # Build and export the .ipa
       bump_build_number
       #match_provision(type: config[:export_method], fetch_provision_only: true) # Match provisioning for the export method
+
+      update_code_signing_settings(
+        use_automatic_signing: false,
+        path: ENV["APP_XCODEPROJ"]
+      )
+      
       gym(
         scheme: config[:scheme],
         export_method: config[:export_method],
