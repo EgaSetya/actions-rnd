@@ -1,5 +1,5 @@
-git_url("https://github.com/tanookiai/bythen-ios-credentials.git")
-git_basic_authorization(ENV["MATCH_GIT_BASIC_AUTHORIZATION"])
+git_url("git@github.com:tanookiai/bythen-ios-credentials.git")
+
 storage_mode("git")
 
 type("development") # The default type, can be: appstore, adhoc, enterprise or development
