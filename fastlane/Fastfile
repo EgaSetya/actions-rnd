@@ -121,7 +121,7 @@
 
       # Build and export the .ipa
       bump_build_number
-      match_provision(type: config[:export_method], fetch_provision_only: true) # Match provisioning for the export method
+      #match_provision(type: config[:export_method], fetch_provision_only: true) # Match provisioning for the export method
       gym(
         scheme: config[:scheme],
         export_method: config[:export_method],
