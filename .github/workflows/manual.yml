@@ -1,0 +1,64 @@
+name: Manual App Distribution
+on:
+  workflow_dispatch:
+    inputs:
+      distribution_platform:
+        description: 'Choose distribution platform'
+        required: true
+        type: choice
+        options:
+          - firebase
+          - testflight
+        default: 'firebase'
+
+jobs:
+  distribute:
+    name: Distribute App
+    runs-on: macos-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.2'
+          bundler-cache: true
+
+      - name: Install Fastlane
+        run: gem install fastlane
+
+      - name: Setup Firebase CLI
+        if: ${{ github.event.inputs.distribution_platform == 'firebase' }}
+        run: |
+          curl -sL https://firebase.tools | bash
+          
+      - name: Setup certificates and provisioning profiles
+        env:
+          MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
+          MATCH_GIT_BASIC_AUTHORIZATION: ${{ secrets.MATCH_GIT_BASIC_AUTHORIZATION }}
+        run: |
+          fastlane match development
+          fastlane match adhoc
+          fastlane match appstore
+
+      - name: Deploy to Firebase
+        if: ${{ github.event.inputs.distribution_platform == 'firebase' }}
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+          FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
+        run: |
+          fastlane deploy_staging
+
+      - name: Deploy to TestFlight
+        if: ${{ github.event.inputs.distribution_platform == 'testflight' }}
+        env:
+          FASTLANE_APPLE_APPLICATION_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+          FASTLANE_USER: ${{ secrets.APPLE_ID }}
+          FASTLANE_PASSWORD: ${{ secrets.APPLE_ID_PASSWORD }}
+          APP_STORE_CONNECT_API_KEY_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_KEY_ID }}
+          APP_STORE_CONNECT_API_KEY_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ISSUER_ID }}
+          APP_STORE_CONNECT_API_KEY_KEY: ${{ secrets.APP_STORE_CONNECT_API_KEY_KEY }}
+        run: |
+          fastlane deploy_production
