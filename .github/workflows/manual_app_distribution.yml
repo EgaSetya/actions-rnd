@@ -60,6 +60,7 @@ jobs:
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
           FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
+          MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
         run: |
           if [ -n "${{ github.event.inputs.release_notes }}" ]; then
             fastlane deploy_dev release_notes:"${{ github.event.inputs.release_notes }}"
