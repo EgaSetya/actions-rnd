@@ -56,7 +56,7 @@ jobs:
           fastlane match development --readonly --shallow_clone
 
       - name: Deploy to Firebase(DEV)
-        if: ${{ github.event.inputs.distribution_platform == 'firebase' }}
+        if: ${{ github.event.inputs.distribution_platform == 'development' }}
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
           FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
