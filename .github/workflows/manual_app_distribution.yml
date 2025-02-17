@@ -48,18 +48,17 @@ jobs:
         run: |
           curl -sL https://firebase.tools | bash
 
-      # - name: Setup certificates and provisioning profiles
-      #   env:
-      #     MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
-      #   run: |
-      #     fastlane fetch_provisioning_profile
+      - name: Setup certificates and provisioning profiles
+        env:
+          MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
+        run: |
+          fastlane match development --readonly --shallow_clone
 
       - name: Deploy to Firebase
         if: ${{ github.event.inputs.distribution_platform == 'firebase' }}
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
           FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
-          MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
         run: |
           if [ -n "${{ github.event.inputs.release_notes }}" ]; then
             fastlane deploy_staging release_notes:"${{ github.event.inputs.release_notes }}"
