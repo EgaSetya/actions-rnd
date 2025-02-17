@@ -48,11 +48,11 @@ jobs:
         run: |
           curl -sL https://firebase.tools | bash
 
-      - name: Setup certificates and provisioning profiles
-        env:
-          MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
-        run: |
-          fastlane fetch_provisioning_profile
+      # - name: Setup certificates and provisioning profiles
+      #   env:
+      #     MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
+      #   run: |
+      #     fastlane fetch_provisioning_profile
 
       - name: Deploy to Firebase
         if: ${{ github.event.inputs.distribution_platform == 'firebase' }}
