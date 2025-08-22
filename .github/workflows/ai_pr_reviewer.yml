@@ -19,8 +19,8 @@ jobs:
           CUSTOM_INSTRUCTIONS: |
               Focus on iOS/Swift best practices including:
               - Memory management and retain cycles
-              - UI updates on main thread
-              - SwiftUI vs UIKit patterns
-              - iOS architectural patterns (MVVM, MVC, etc.)
+              - Multithreading
+              - SwiftUI patterns
+              - iOS architectural patterns MVVM and Solid Principles
               - Xcode project structure
-              - CocoaPods/SPM dependency management
+              - SPM dependency management
