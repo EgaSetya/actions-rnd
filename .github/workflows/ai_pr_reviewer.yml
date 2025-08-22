@@ -10,7 +10,7 @@ jobs:
         with:
           fetch-depth: 0
       - name: Shippie 🚢
-        uses: mattzcarey/shippie@latest
+        uses: mattzcarey/shippie@v0.10.0
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         with:
