@@ -30,7 +30,7 @@ enum SideMenuStudioSection: SideMenuSection {
     case byteAsMe
     case liveStream
     
-    var header: String { "STUDIO" }
+    var header: String { "STUDIO APATU" }
     var detail: (title: String, iconName: String, page: MenuPage?, url: URL?) {
         switch self {
         case .directorsMode: ("Director's Mode", "clapper-board-play.sharp.regular", .studio, nil)
